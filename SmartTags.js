@@ -1,7 +1,7 @@
 //SMARTTAGS - by Seth Vandebrooke
 /*
-SmartTags is a system for dynamic data output. By asigning data values with custom HTML tags you can make data outputting an easy task.
-SmarTags is written entirely as a short javascript function and uses 1 array for assigning values to tagnames.
+SmartTags is a system for dynamic data output. By asigning data values to custom HTML tags you can make data outputting an easy task.
+The SmartTags Object handles all operations needed with its included methods.
 */
 /* --------------------------- SMARTTAGS LICENSE --------------------------
 
@@ -29,34 +29,117 @@ SmarTags is written entirely as a short javascript function and uses 1 array for
 
 //HELP
 /*
-SmartTag Syntax: Tagname|Value
+SmartTag.newTag Syntax: Tagname,Value
+The value can either be a string or a function
 
-Create an array like so:
-var Tags = new Array(); //Declare the Tags array
-Tags[0] = "name|John Doe"; // Assign the value "John Doe" to the tagname "name"
-Tags[1] = "job|Programmer"; //Assign the value "Programmer" to the tagname "job"
+//Create a new tag:
+SmartTags.newTag("username", function(){
+  var result;
+  //more lines of code
+  //code that assigns a string value to the result variable
+  return result;
+});
 
-Output the data using the tagnames:
-<name></name>
-<job></job>
+//reassign the value of a tag
+SmartTags.setTag("username", function(){
+  var result;
+  //more lines of code
+  //code that assigns a string value to the result variable
+  return result;
+});
+
+NOTE: Although the newTag and setTag function have the same parameters, they ARE NOT the same function and CANNOT be used interchangeably.
+
+Use the tagnames to create HTML elements:
+<username></username>
 
 Call the SmartTags function at the end of the HTML document
 <script>
-SmartTags(Tags); //Use whatever Tags array you defined earlier
+SmartTags.run(); //Use the run method to add the values to the html elements
 </script>
-
-The output will look like this:
-John Doe
-Programmer
 
 */
 
-function SmartTags(Tags) {
-	for (var i = 0; i < Tags.length; i++) {
-		var tag = Tags[i].split("|");
-		var x = document.getElementsByTagName(tag[0]);
+var SmartTags = new Object();
+SmartTags.list = [];
+
+SmartTags.run = function() {
+	for (var i = 0; i < SmartTags.list.length; i++) {
+		var tag = SmartTags.list[i];
+		var x = document.getElementsByTagName(tag.tagname);
 		for (var y = 0; y < x.length; y++) {
-			x[y].innerHTML = tag[1];
+      if (typeof tag.tagvalue=="string") {
+        x[y].innerHTML = tag.tagvalue;
+      } else {
+        var output = tag.tagvalue();
+        x[y].innerHTML = output;
+      }
 		}
 	}
+};
+
+SmartTags.newTag = function(Tname,Tvalue) {
+  if (Tname!==undefined) {
+    if (Tvalue!==undefined) {
+        if (typeof Tname=="string") {
+          if (SmartTags.list.length==0&&SmartTags.list[0]==undefined) {
+            SmartTags.list[0] = {tagname:Tname, tagvalue:Tvalue};
+          } else {
+            var index = SmartTags.list.length;
+            SmartTags.list[index] = {tagname:Tname, tagvalue:Tvalue};
+          }
+        } else {
+          return "The name must be a string";
+        } 
+    } else {
+      return "Requires Value";
+    }
+  } else {
+    return "Requires Name";
+  }
+};
+
+SmartTags.setTag = function(Tname,Tvalue) {
+  if (Tname!==undefined) {
+    if (Tvalue!==undefined) {
+        if (typeof Tname=="string") {
+          for (var i = 0; i < SmartTags.list.length; i++) {
+            if (SmartTags.list[i].tagname==Tname) {
+              var index = i;
+            }
+          }
+          SmartTags.list[index] = {tagname:Tname, tagvalue:Tvalue};
+        } else {
+          return "The name must be a string";
+        }
+        } else {
+      return "Requires Value";
+    }
+  } else {
+    return "Requires Name";
+  }
+};
+
+SmartTags.exist = function(Tname) {
+  for (var i = 0; i < SmartTags.list.length; i++) {
+    if (SmartTags.list[i].tagname==Tname) {
+      var index = i;
+    }
+  }
+  if (index!==undefined) {
+    return true;
+  } else {
+    return false
+  }
 }
+
+SmartTags.reset = function() {
+  SmartTags.list = [];
+};
+
+SmartTags.testALL = function() {
+  for (var i = 0; i < SmartTags.list.length; i++) {
+    document.body.innerHTML += "<"+SmartTags.list[i].tagname+"></"+SmartTags.list[i].tagname+"><br>";
+  }
+  SmartTags.run();
+};
